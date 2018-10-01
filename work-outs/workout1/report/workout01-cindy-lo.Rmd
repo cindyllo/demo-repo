@@ -10,8 +10,8 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r, eval = FALSE}
-cd ./work-outs
 mkdir workout1
 cd workout1
 mkdir README.md data code output report
+curl -O https://raw.githubusercontent.com/ucb-stat133/stat133-fall-2018/master/data/nba2018.csv
 ```
