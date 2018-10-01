@@ -1,0 +1,17 @@
+---
+title: 'Workout 1: Data Wrangling and Visualization'
+author: "Cindy Lo"
+date: "10/1/2018"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, eval = FALSE}
+cd ./work-outs
+mkdir workout1
+cd workout1
+mkdir README.md data code output report
+```

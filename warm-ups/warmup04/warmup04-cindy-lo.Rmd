@@ -1,0 +1,193 @@
+---
+title: 'Warm-up 04: Exploring NBA Data'
+author: "Cindy Lo"
+date: "9/23/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, eval = FALSE}
+mkdir warmup04
+cd warmup04
+curl -O https://raw.githubusercontent.com/ucb-stat133/stat133-fall-2018/master/data/nba2018.csv
+```
+
+## 1) Import the data in R
+```{r}
+#install.packages("readr")
+library(readr)
+
+nba2018_tbl <- read_csv("nba2018.csv", col_types = list(player = col_character(), team = col_character(), height = col_character(), birth_date = col_character(), country = col_character(), experience = col_character(), college = col_character(), position = col_factor(levels = c("C", "PF", "PG", "SF", "SG")), salary = col_double(), field_goals_perc = col_double(), points3_perc = col_double(), points2_perc = col_double(), points1_perc = col_double(), effective_field_goal_perc = col_double()))
+
+str(nba2018_tbl)
+```
+
+## 2) Right after importing data
+```{r}
+experience <- nba2018_tbl$experience
+experience[experience == "R"] = "0"
+experience <- as.integer(experience)
+summary(experience)
+```
+
+```{r}
+salary <- nba2018_tbl$salary
+salary <- salary / 1000000
+summary(salary)
+```
+
+```{r}
+position <- nba2018_tbl$position
+levels(position) <- c("center", "power_fwd", "point_guard", "small_fwd", "shoot_guard")
+table(position)
+```
+
+## 3) A bit of subscripting (i.e. indexing, slicing, subsetting)
+How many players went to UCLA?
+```{r}
+length(nba2018_tbl$college[which(nba2018_tbl$college == "University of California, Los Angeles")])
+```
+How many players went to Cal?
+```{r}
+length(nba2018_tbl$college[which(nba2018_tbl$college == "University of California, Berkeley")])
+```
+What's the largest weight value?
+```{r}
+max(nba2018_tbl$weight)
+```
+Who are the players with the largest weight value?
+```{r}
+nba2018_tbl$player[which(nba2018_tbl$weight == max(nba2018_tbl$weight))]
+```
+What's the overall average weight?
+```{r}
+mean(nba2018_tbl$weight)
+```
+What is the median salary of all players?
+```{r}
+median(nba2018_tbl$salary)
+median(salary) #median using salary in millions
+```
+What is the median salary of the players with 10 years of experience or more?
+```{r}
+median(nba2018_tbl$salary[which(nba2018_tbl$experience > 10 | nba2018_tbl$experience == 10)])
+
+median(salary[which(nba2018_tbl$experience > 10 | nba2018_tbl$experience == 10)]) #median using salary in millions
+```
+What is the median salary of Shooting Guards and Point Guards?
+```{r}
+median(nba2018_tbl$salary[which(nba2018_tbl$position == "SG" | nba2018_tbl$position == "PG")])
+
+median(salary[which(nba2018_tbl$position == "SG" | nba2018_tbl$position == "PG")]) #median using salary in millions
+```
+What is the median salary of Power Forwards, 30 years or older, weighing 240 pounds or more?
+```{r}
+median(nba2018_tbl$salary[which(nba2018_tbl$position == "PF" & (nba2018_tbl$age == 30 | nba2018_tbl$age > 30) & (nba2018_tbl$weight == 240 | nba2018_tbl$weight > 240))])
+
+median(salary[which(nba2018_tbl$position == "PF" & (nba2018_tbl$age == 30 | nba2018_tbl$age > 30) & (nba2018_tbl$weight == 240 | nba2018_tbl$weight > 240))]) #median using salary in millions
+```
+Create a data frame `gsw` with the player name, position, height, weight, and age of the Golden State Warriors (GSW). Display this data frame.
+```{r}
+gsw <- data.frame(nba2018_tbl$player, nba2018_tbl$position, nba2018_tbl$height, nba2018_tbl$weight, nba2018_tbl$age)
+gsw
+```
+
+## 4) Performance of players
+```{r}
+nba2018_tbl$missed_field_goals = nba2018_tbl$field_goals_atts - nba2018_tbl$field_goals
+
+nba2018_tbl$missed_free_throws = nba2018_tbl$points1_atts - nba2018_tbl$points1
+
+nba2018_tbl$total_rebounds = nba2018_tbl$off_rebounds + nba2018_tbl$def_rebounds
+
+nba2018_tbl$mins_game = nba2018_tbl$minutes / nba2018_tbl$games
+
+```
+Calculating efficiency for each player:
+```{r}
+PTS <- nba2018_tbl$points1 + nba2018_tbl$points2 + nba2018_tbl$points3
+REB <- nba2018_tbl$total_rebounds
+AST <- nba2018_tbl$assists
+STL <- nba2018_tbl$steals
+BLK <- nba2018_tbl$blocks
+MissedFG <- nba2018_tbl$missed_field_goals
+MissedFT <- nba2018_tbl$missed_free_throws
+TO <- nba2018_tbl$turnovers
+GP <- nba2018_tbl$games
+EFF <- (PTS + REB + AST + STL + BLK - MissedFG - MissedFT - TO) / GP
+
+nba2018_tbl$efficiency = EFF
+summary(nba2018_tbl$efficiency)
+hist(nba2018_tbl$efficiency, xlab = "Efficiency", ylab = "Number of Players", col = "orange", main = "Efficiency v.s. Number of GSW Players ")
+```
+Top 10 players by EFF in decreasing order:
+```{r}
+sortednba <- nba2018_tbl[order(-nba2018_tbl$efficiency),]
+head(sortednba[c("player", "team", "salary", "efficiency")], n = 10)
+```
+Players with a negative EFF:
+```{r}
+nba2018_tbl$player[nba2018_tbl$efficiency < 0]
+```
+
+## 5) Further Exploration
+The more efficient a player is, the higher his salary?
+```{r}
+cor(nba2018_tbl$efficiency, nba2018_tbl$salary)
+
+plot(nba2018_tbl$efficiency, nba2018_tbl$salary, main = "Efficiency v.s. Salary", xlab = "Efficiency", ylab = "Salary", col = "orange", pch = 19, cex = 0.4)
+```
+
+- There seems to be a general positive trend, as evidenced by the positive correlation and the plot between salary and efficiency.
+
+As players get older, do they tend to become more efficient?
+```{r}
+cor(nba2018_tbl$age, nba2018_tbl$efficiency)
+
+plot(nba2018_tbl$age, nba2018_tbl$efficiency, main = "Age v.s. Efficiency", xlab = "Age", ylab = "Efficiency", col = "green", pch = 19, cex = 0.4)
+```
+
+- There doesn't seem to be any particular relationship between a player's age and efficiency, and seem to be generally unrelated with each other.
+
+Does the rank of a player seem to be associated with his efficiency?
+```{r}
+cor(nba2018_tbl$rank, nba2018_tbl$efficiency)
+
+plot(nba2018_tbl$rank, nba2018_tbl$efficiency, main = "Rank v.s. Efficiency", xlab = "Rank", ylab = "Efficiency", col = "magenta", pch = 19, cex = 0.4)
+```
+
+- There is an association between a player's rank and his efficiency. The lower the ranking (aka the larger the number), the lower the efficiency; and the more important the rank, the more efficient the player appears to be.
+
+## 6) Comments and Reflections
+What things were hard, even though you saw them in class?
+
+- Even though I saw Prof use `read.table` and `read.csv` in lecture, I still found it hard to import the `nba2018.csv` data file into RStudio, specify the column type, and familiarize myself with the parameters of the function `read_csv`.
+
+What was easy(-ish) even though we haven't done it in class?
+
+- Working with the subscripting (indexing, slicing, subsetting, etc.) was fairly straight-forward.
+
+Did you need help to complete the assignment? If so, what kind of help? Who helped you?
+
+- I did need help to complete the assignment, especially the part with part 4, the performance of players. I know absolutely nothing about basketball except that you dribble the ball so I asked my friend Cole how the points, field goals, etc. work when calculating efficiency.
+
+How much time did it take to complete this HW?
+
+- It took about 3 hours.
+
+What was the most time consuming part?
+
+- Putting everything into my R Markdown file and making my plots for part 5 were the most time consuming parts of this warm up.
+
+Was there anything that you did not understand? or fully grasped?
+
+- What is the difference between `read.csv` and `read_csv`? As well as other variations of `read.?` or `read_?`
+
+- What's the difference between a dataframe and a table?
+
+Was there anything frustrating in particular?
+
+- I think importing the data was really frustrating at first, because I was initially using `read.table` and so was writing all of the colClasses manually, until I realized that `read_csv` made things much easier.

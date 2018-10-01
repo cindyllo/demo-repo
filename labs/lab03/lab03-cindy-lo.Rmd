@@ -1,0 +1,146 @@
+---
+title: 'Lab 03: Command Line Basics and Data Importing'
+author: "Cindy Lo"
+date: "9/12/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Basic Bash shell commands
+```{r, eval = FALSE}
+mkdir("~/Desktop/stat133/stat133-lab03")
+cd ~/Desktop/stat133/stat133-lab03
+curl -O http://textfiles.com/food/bread.txt
+ls
+curl -O http://textfiles.com/food/btaco.txt
+curl -O http://textfiles.com/food/1st_aid.txt
+curl -O http://textfiles.com/food/beesherb.txt
+curl -O http://textfiles.com/food/bakebred.txt
+curl -O http://archive.ics.uci.edu/ml/machine-learning-databases/forest-fires/forestfires.csv
+curl -O http://web.pdx.edu/~gerbing/data/cars.csv
+curl -O http://web.pdx.edu/~gerbing/data/color.csv
+curl -O http://web.pdx.edu/~gerbing/data/snow.csv
+curl -O http://web.pdx.edu/~gerbing/data/mid1.csv
+curl -O http://web.pdx.edu/~gerbing/data/mid2.csv
+curl -O http://web.pdx.edu/~gerbing/data/minutes1.csv
+curl -O http://web.pdx.edu/~gerbing/data/minutes2.csv
+
+ls -l #to list the contents in your current directory in long format
+man ls #Look at the `man` documentation of `ls`
+ls -r #list the contents in reverse order
+ls -l -t
+ls *.txt
+ls -r *.csv
+ls ????.csv
+ls *[2]*.csv
+ls *[[:digit:]]*.csv #or `ls *[0-9]*.csv`
+mkdir data
+cd data
+mkdir txt-files
+mkdir csv-files
+mv ../bread.txt  txt-files
+mv ../*.txt  txt-files
+mv ../*.csv csv-files
+cd ../..
+cp data/txt-files/bread.txt copies
+cp data/txt-files/*.txt copies
+cp data/csv-files/*.csv copies
+cd copies
+mv bread.txt bread-recipe.txt
+mv Fisher.csv iris.csv #there's no Fisher.csv in our directory, so I wrote what I would write down if it did exist
+mv btaco.txt breakfast-taco.txt
+cd ..
+mv copies copy-files
+rm copy-files/*.csv
+rm -R copy-files
+ls -r data/txt-files
+```
+
+## Abalone Data Set
+```{r}
+url <- "http://archive.ics.uci.edu/ml/machine-learning-databases/abalone/abalone.data"
+abalone <- read.table(url, sep = ",")
+```
+What's the character delimiter?
+
+- The character delimiter is a comma (,).
+
+Is there a row for column names?
+
+- There is no row for column names.
+
+Are there any missing values? If so, how are they codified?
+
+- Missing values were removed because the majority had the predicted value missing. The ranges of the continuous values have been scaled for use with an ANN (by dividing by 200).
+
+What is the data type of each column?
+
+- The first column is nominal. Columns 2 to 8 have continuous data type, and the last column has an integer data type.
+
+### Getting a Local Copy of the Data
+```{r}
+#origin <- 'http://archive.ics.uci.edu/ml/machine-learning-databases/abalone/abalone.data'
+#destination <- 'abalone.data'
+#download.file(origin, destination)
+ls()
+```
+
+## Some Bash Commands
+```{r, eval = FALSE}
+file abalone.data
+```
+`abalone.data` is a ASCII text
+
+```{r, eval = FALSE}
+wc abalone.data
+```
+`abalone.data` has
+
+  1. newline count of 4177
+  2. word count of 4177
+  3. byte count of 191873
+```{r, eval = FALSE}
+man wc
+wc -l abalone.data
+head abalone.data
+man head
+head -n 5 abalone.data
+tail abalone.data
+man tail
+tail -n 3 abalone.data
+less abalone.data
+q
+```
+
+## Basic Importing
+```{r}
+abalone <- read.table("abalone.data", sep = ",")
+head(abalone)
+tail(abalone)
+str(abalone, vec.len = 1)
+```
+
+### Detailed information about the columns
+```{r}
+column_names <- c("Sex", "Length", "Diameter", "Height", "Whole weight", "Shucked weight", "Viscera weight", "Shell weight", "Rings")
+
+column_types <- c("character", "numeric", "real", "real", "real", "real", "real", "real", "integer")
+
+abalone <- read.table("abalone.data", sep = ",", col.names = column_names, colClasses = column_types)
+str(abalone)
+
+abalone2 <- read.csv("abalone.data", sep = ",", col.names = column_names, colClasses = column_types)
+str(abalone2)
+
+abalone10 <- head(abalone, 10)
+str(abalone10)
+
+abalone20 <- head(abalone, skip = 10, 10)
+str(abalone20)
+
+summary(abalone)
+apply(abalone, 2, sd)
+

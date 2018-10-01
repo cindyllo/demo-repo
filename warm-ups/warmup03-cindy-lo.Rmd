@@ -1,0 +1,144 @@
+---
+title: "Warm-up 03: Basic Data Manipulation"
+author: "Cindy Lo"
+date: "9/15/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## Reading the Data Into R
+```{r}
+#https://github.com/ucb-stat133/stat133-fall-2018/raw/master/data/saratoga.txt
+```
+Do the data have a header containing the variable names?
+
+- Yes! The headers include variable names (i.e. "Price", "Lot Size", "Waterfront")
+
+Are the values for an observation separated by a comma, blank, or tab?
+
+- The values for an observation seem to be separated by a tab.
+
+What are the parameters that are used to specify whether the data have a header? How are the values in a row separated?
+
+- The parameter `header` is a logical value that indicates whether the file contains the names of the variables as its first line.
+
+- `sep` is the field separator character. Values on each line of the file are separated by this separator. If `sep` = "", which is the default for `read.table`, then the separator is 'white space'.
+
+```{r}
+github <- "https://github.com/ucb-stat133/stat133-fall-2018/"
+repo <- "raw/master/data/saratoga.txt"
+house <- read.table(paste0(github,repo), header = TRUE, sep = "\t")
+str(house)
+```
+
+## Examine price
+```{r}
+summary(house$Price)
+hist(house$Price)
+log_price <- log(house$Price)
+hist(log_price)
+
+cheap <- log_price < 10.5
+sum(cheap)
+```
+How many houses are what we call cheap?
+
+- There are 5 houses where the log of the house price is under 10.5.
+
+Use logical subsetting to print the values of all the variables for the cheap houses.
+```{r}
+log_price[log_price < 10.5]
+```
+
+Use the variable `cheap` to (logically) subset the data frame `house` and remove these rows from the data frame, replacing the existing data frame with a new one.
+```{r}
+house2 <- subset(house, cheap == FALSE)
+```
+
+## Explore Living Area
+Do you find a similar issue with the living area?
+```{r}
+summary(house$Living.Area)
+hist(house$Living.Area)
+log_livingarea <- log(house$Living.Area)
+hist(log_livingarea)
+```
+
+- With the living area, the median is 1636 and the mean, 1757, is relatively close to the median. The histogram for `house$Living.Area` is right skewed! The log transformation appears to be roughly symmetric, centered around the bin (7.25, 7.5).
+
+## Transforming Variables into Factors
+```{r}
+BR <- house$Bedrooms
+BR[BR > 5] <- 5
+BR[BR < 2] <- 2
+BR <- factor(BR, labels = c("2- BR", "3 BR", "4 BR", "5+ BR"))
+```
+
+```{r}
+summary(house$Bedrooms)
+summary(BR)
+```
+How does a summary of `BR` look different than a summary of `house$Bedrooms`?
+
+- A summary of `house$Bedrooms` has a minimum and maximum value of 1 and 7, respectively, whereas a summary of `BR` has the total number of 2- BR, 3 BR, 4 BR, and 5+ BR.
+
+## Plotting Price against Living Area
+```{r}
+br_colors <- house$Bedrooms
+br_colors[br_colors > 5] <- 5
+br_colors[br_colors < 2] <- 2
+
+my_colors <- c("aquamarine3", "darkgoldenrod2", "coral2", "mediumorchid3")
+
+br_colors[br_colors == 2] <- my_colors[1]
+br_colors[br_colors == 3] <- my_colors[2]
+br_colors[br_colors == 4] <- my_colors[3]
+br_colors[br_colors == 5] <- my_colors[4]
+
+```
+
+```{r}
+plot(log_price ~ log_livingarea, data = house, log = "xy", main = "", xlab = "Living Area (log sq ft)", ylab = "Price (log $)", col = br_colors, pch = 19, cex = 0.4)
+
+legend("bottomright", fill = my_colors, legend = levels(BR), title = "# Bedrooms", cex = 0.75)
+```
+
+## Number of Fireplaces
+```{r}
+FP <- house$Fireplaces
+FP[FP > 1] <- 1
+FP <- factor(FP, labels = c("None", "At least 1"))
+```
+
+```{r}
+pricesqft <- house$Price/house$Living.Area
+log_pricesqft <- log(pricesqft)
+hist(log_pricesqft)
+```
+
+```{r}
+fp_colors <- house$Fireplaces
+fp_colors[fp_colors > 1] <- 1
+fp_colors[fp_colors == 0] <- my_colors[1]
+fp_colors[fp_colors == 1] <- my_colors[2]
+```
+
+```{r}
+plot(log_pricesqft ~ log_price, data = house, log = "xy", main = "", xlab = "Price per Sq. Ft (log $ per sq ft)", ylab = "Price (log $)", col = fp_colors, pch = 19, cex = 0.4)
+
+legend("bottomright", fill = my_colors, legend = levels(FP), title = "# of Fireplaces", cex = 0.75)
+```
+
+Are the houses with fireplaces generally more expensive than houses without?
+
+- Houses with fireplaces seem to generally cost about the same as houses without fireplaces. The values seem to be centered around the `Price (log $)` values (4, 6).
+
+What is the relationship between price per square foot and price?
+
+- There seems to be a general positive trend between the price per square foot and the price. As one increases, the other also increases.
+
+Can you explain why you might have this shape of relationship?
+
+- The shape of the relationship may be due to how the more expensive a house is per square foot, the more the price of a house may increase.

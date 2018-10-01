@@ -1,0 +1,142 @@
+---
+title: "Lab 01: Intro to RStudio"
+author: "Cindy Lo"
+date: "8/29/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##First Contact with the R Console
+
+Monthly bills of Leia
+
+```{r}
+phone <- 80
+transportation <- 20
+groceries <- 527
+gym <- 10
+rent <- 1500
+other <- 83
+expenses <- c(phone, transportation, groceries, gym, rent, other)
+expenses
+total <- transportation + phone + groceries + gym + rent + other
+total #the sum of the expenses
+semester <- 5 * expenses
+semester #amount Leia spends in a school semester
+year <- 2 * semester
+year #amount Leia spends in a school year
+```
+
+Here's a barplot:
+```{r}
+sorted <- sort(expenses, decreasing = TRUE)
+named <- c("rent", "groceries", "other", "phone", "transportation", "gym")
+bars <- barplot(sorted, names.arg = named, ylim = c(0, 2000))
+text(bars, sorted, labels = sorted, pos = 3)
+```
+
+###Pythagoras Formula
+```{r}
+a <- 3
+b <- 4
+c <- sqrt(a**2 + b**2)
+c
+```
+
+###Binomal Formula
+What is the probability of getting exactly 2 heads?
+```{r}
+n <- 5
+k <- 2
+p <- 0.5
+```
+Use factorial to compute the number of combinations "n choose k"
+```{r}
+factorial(n) / (factorial(k) * factorial(n-k))
+```
+Apply the binomial formula, using factorial, to calculate the probability of getting exactly 2 heads out of 5 tosses
+```{r}
+(factorial(n) / (factorial(k) * factorial(n-k))) * (0.5)**2 * (0.5)**3
+
+choose(n = 5, k = 2) * (0.5)**2 * (0.5)**3
+```
+
+Consider rolling a fair die 10 times. What is the probability of getting exactly 3 sixes?
+```{r}
+choose(n = 10, k = 3) * (1/6)**3 * (5/6)**7
+
+??binomial #to look for help documentation using the keyword: binomial
+```
+Using $dbinom()$ to obtain the probabilities: 2 heads in 5 coin tosses, and 3 sixes in 3 rolls of a die
+```{r}
+dbinom(2, 5, 0.5)
+dbinom(3, 3, 1/6)
+```
+What's the probability of 2 heads in 5 coin tosses for a biased coin with a chance of heads of 35%?
+```{r}
+dbinom(2, 5, 0.35)
+```
+What's the probability of getting more than 3 heads in 5 tosses with a biased coin of 35% chance of heads?
+```{r}
+dbinom(4, 5, 0.35) + dbinom(5, 5, 0.35)
+```
+
+##Installing Packages
+```{r}
+#install.packages(c("readr", "ggplot2", "knitr", "stringr", "RColorBrewer", "XML"))
+library(knitr)
+library(readr)
+library(ggplot2)
+library(stringr)
+library(RColorBrewer)
+library(XML)
+```
+Calculate $3x^2 + 4x + 8$ when $x = 2$
+```{r}
+x <- 2
+3 * x^2 + 4 * x + 8
+```
+Calculate: $3x^2 + 4x + 8$ but now with a numeric sequence for $x$ using x <- -3:3
+```{r}
+x <- -3:3
+3 * x^2 + 4 * x + 8
+```
+
+To look up info about math binary operators:
+```{r}
+help("^")
+```
+
+In the Files tab, I can make changes directly to files on my computer, by adding new folders, deleting, renaming, etc.
+
+The Help tab allows me to search up different functions or commands, etc. in R. Clicking the button with the House icon takes me to the Homepage of R Studio resources, manuals, and references.
+
+Clicking on the History tab lets me see all of the lines of code I've written (even after I've cleared my Console pane!). The buttons "To Console" and "To Source" allows me to send selected lines in my History into my Console pane or Source file, respectively. I can also remove selected entries or clear all entries in my History as well.
+
+The Environment page shows all of my objects and variables, including data sets and values I've defined.
+
+##Review Questions
+Example 1:
+Error, Var is different from var because R is case sensitive.
+
+Example 2:
+Error, a name (in this case, 2x) cannot start with a number.
+
+Example 3:
+sqrt(4) will return 2
+
+Example 4:
+Error, a name (in this case, a number) cannot contain spaces.
+
+Example 5:
+`one number` will return 16
+one number will return an error because it contains a space and has improper formatting.
+
+##RStudio working environment: Pane Layout
+The source pane is where you write your code.
+The console is where we can run our code.
+The environment shows the objects in my work space.
+In the history tab, we can view our command history.
