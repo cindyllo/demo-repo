@@ -46,24 +46,24 @@ summary(nba2018_tbl$efficiency)
 sink()
 
 # To keep the data up to 2 decimal digits
-nba2018_tbl$efficiency <- as.numeric(format(round(nba2018_tbl$efficiency, 2), nsmall = 2))
-nba2018_tbl$salary <- as.numeric(format(round(nba2018_tbl$salary, 2), nsmall = 2))
-teams <- select(nba2018_tbl,
-                team,
-                experience,
-                salary,
-                points3,
-                points2,
-                points1,
-                points,
-                off_rebounds,
-                def_rebounds,
-                assists,
-                steals,
-                blocks,
-                turnovers,
-                fouls,
-                efficiency)
+nba2018_tbl$efficiency <- round(efficiency, digits = 2)
+nba2018_tbl$salary <- round(salary, digits = 2)
+teams <- summarise(group_by(nba2018_tbl, team),
+                  experience = sum(experience),
+                  salary = sum(salary),
+                  points3 = sum(points3),
+                  points2 = sum(points2),
+                  points1 = sum(points1),
+                  points = sum(points),
+                  off_rebounds = sum(off_rebounds),
+                  def_rebounds = sum(def_rebounds),
+                  assists = sum(assists),
+                  steals = sum(steals),
+                  blocks = sum(blocks),
+                  turnovers = sum(turnovers),
+                  fouls = sum(fouls),
+                  efficiency = sum(efficiency))
+
 
 sink("../data/teams-summary.txt")
 summary(teams)
